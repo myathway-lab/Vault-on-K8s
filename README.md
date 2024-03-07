@@ -6,6 +6,7 @@ In this lab, we will deploy vault cluster on Kubernetes using Helm.  <br>
 We will test the AWS secret engine to rotate the access keys.  <br>
 We will test vault role to manage IAM access.  <br>
 
+<br>
 
 1) Add Hashicorp repo using helm chart.
 2) Create the helm value file to customize the default vaules.
