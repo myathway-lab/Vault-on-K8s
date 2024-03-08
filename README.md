@@ -1,10 +1,8 @@
-## Exploring Vault on Kubernetes Cluster
+## Setup Vault cluster on Kubernetes
 
 ### Summary
 
 In this lab, we will deploy vault cluster on Kubernetes using Helm.  <br>
-We will test the AWS secret engine to rotate the access keys.  <br>
-We will test vault role to manage IAM access.  <br>
 
 <br>
 
@@ -16,26 +14,18 @@ We will test vault role to manage IAM access.  <br>
 6) Unseal another nodes.
 7) Access vault UI.
 8) Enable AWS engine.
-9) Manage the AWS secret engine & Rotate IAM access key
-10) Create a role inside Vault. 
-11) Use role to create AWS IAM access. 
+
+**To explore more on AWS secret, pleaes refer below.**
+<li class="masthead__menu-item">
+<a href="https://github.com/myathway-lab/Generate-IAM-users-with-Vault">Generate IAM Users with Vault</a>
+</li>
 
 <br>
-
 
 **Requirements** 
 
 - Make sure K8s cluster ready.
 - Install Helm.
-
-```yaml
-vagrant@kindcluster-box:~/kind-demo/scripts$ kubectl get no
-NAME                STATUS   ROLES           AGE   VERSION
-127-control-plane   Ready    control-plane   10m   v1.27.3
-127-worker          Ready    <none>          10m   v1.27.3
-127-worker2         Ready    <none>          10m   v1.27.3
-127-worker3         Ready    <none>          10m   v1.27.3
-```
 
 <br>
 
@@ -350,15 +340,9 @@ policies             ["root"]
 
 **8) Enable AWS engine.**
 
-- We will enable AWS engine to store AWS access keys inside vault.
 
 ```yaml
 vagrant@kindcluster-box:~/kind-demo/k8s-vault-demo01$ kubectl exec -it vault01-0 -n vault -- sh
-/ $ export VAULT_ADDR="http://127.0.0.1:8200"
-/ $ echo $VAULT_ADDR
-http://127.0.0.1:8200
-/ $ export AWS_ACCESS_KEY_ID=AKIAQ3xxxxxxxxxxEKWY
-/ $ export AWS_SECRET_ACCESS_KEY=Y+as6s+1xxxxxxxxxxxxxxxxxxxrKvT6
 
 / $ vault secrets enable -path=mt-aws-master aws
 Success! Enabled the aws secrets engine at: mt-aws-master/
@@ -382,83 +366,3 @@ Success! Tuned the secrets engine at: mt-aws-master/
 
 ![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/60166a1f-25a5-4d67-83ba-1abafad6b9b9)
 
-<br>
-
-**9) Manage the AWS secret engine & Rotate IAM access key.**
-
-- below is my current AWS IAM access key.
-
-![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/12d41fb8-8cd4-4aeb-97d4-7cb69ed007fd)
-
-- Now let's write those access keys into Vault secret & rotate using vault.
-
-```yaml
-/ $ vault write mt-aws-master/config/root access_key=$AWS_ACCESS_KEY_ID secret_key=$AWS_SECRET_ACCESS_KEY region=ap-southeast-1
-Success! Data written to: mt-aws-master/config/root
-
-/ $ vault write -f mt-aws-master/config/rotate-root
-Key           Value
----           -----
-access_key    AKIAQ3xxxxxxxxxxEKWY
-/ $
-```
-
-- Verify the access key is rotated the new key “AKIAQxxxxxxxxxxK2WX”.
-
-![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/6eb10929-c1f2-4782-934b-ef404571aaa8)
-
-<br>
-
-**10) Create a role inside Vault.**
-
-- We will create new vault AWS role inside Vault.
-
-**By using this role, vault can create new IAM user. Policy can be defined as below. The secret lease duration follows the lease time of it secret engine.**
-
-
-
-```yaml
-$ vault write mt-aws-master/roles/aws-terraform-admin-role credential_type=iam_user \
-> policy_document=-<<EOF
-> {
->   "Version": "2012-10-17",
->   "Statement": [
->     {
->       "Effect": "Allow",
->       "Action":  "*",
->       "Resource": "*"
->     }
->     ]
-> }
-> EOF
-Success! Data written to: mt-aws-master/roles/aws-terraform-admin-role
-```
-
-- Verify aws-terraform-admin-role is created.
-  
-![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/f69f5fcc-cce6-451c-98e2-347a6bdd2d03)
-
-- For now, we have only two IAM accounts.
-  
-![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/731e8c5b-38fa-4858-b290-be0997a100d5)
-
-<br>
-
-**11) Use vault role to create AWS IAM access.**
-
-```yaml
-/ $ vault read mt-aws-master/creds/aws-terraform-admin-role 
-Key                Value
----                -----
-lease_id           mt-aws-master/creds/aws-terraform-admin-role/eTWDQcvB8NSFFZnpzVg90VXO
-lease_duration     1h
-lease_renewable    true
-access_key         AKIAQxxxxxxxxxxxxxxOGVI
-secret_key         pHhm7LGBJxxxxxxxxxxxxxxxxxleF5097WeLLUbE
-security_token     <nil>
-/ $
-```
-
-- Veriy the new IAM account was created.
-  
-![image](https://github.com/myathway-lab/Vault-on-K8s/assets/157335804/0b6424b4-1873-4767-bc3b-b988c4c4cc8c)
