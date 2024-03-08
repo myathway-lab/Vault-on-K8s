@@ -1,4 +1,4 @@
-## Install Vault on Kubernetes Cluster
+## Exploring Vault on Kubernetes Cluster
 
 ### Summary
 
