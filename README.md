@@ -28,7 +28,7 @@ In this lab, we will deploy vault cluster on Kubernetes using Helm.  <br>
 
 
 
-**Requirements** 
+### Requirements
 
 - Make sure K8s cluster ready.
 - Install Helm.
