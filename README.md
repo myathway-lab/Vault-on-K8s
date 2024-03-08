@@ -15,13 +15,17 @@ In this lab, we will deploy vault cluster on Kubernetes using Helm.  <br>
 7) Access vault UI.
 8) Enable AWS engine.
 
-**To explore more on AWS secret, pleaes refer below.**
+<br>
+
+**To explore more on AWS secret role, pleaes refer below.**
 <li class="masthead__menu-item">
 <a href="https://github.com/myathway-lab/Generate-IAM-users-with-Vault">Generate IAM Users with Vault</a>
 </li>
 
 
+
 <br>
+
 
 
 **Requirements** 
